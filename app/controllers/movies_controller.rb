@@ -7,17 +7,26 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @sort = params[:sort]
+    @sort = params[:sort] ? params[:sort] : session[:prev_sort]
+    session[:prev_sort] = @sort
+
     @all_ratings = Movie.all_ratings
-    @filter_ratings = params[:ratings] ? params[:ratings].keys : @all_ratings
+    @filter_ratings = params[:ratings] ? params[:ratings].keys : prev_ratings_nil
+    session[:prev_ratings] = @filter_ratings
 
     if ! @sort.nil?
-	@movies = Movie.find(:all, :order => "#{@sort} ASC")
+	@movies = Movie.find(:all, :conditions => {"rating" => @filter_ratings}, :order => "#{@sort} ASC")
     else
-	#@movies = Movie.all
         @movies = Movie.find(:all, :conditions => {"rating" => @filter_ratings})
     end
     
+  end
+
+  def prev_ratings_nil
+    if session[:prev_ratings].nil?
+	session[:prev_ratings] = @all_ratings
+    end
+    session[:prev_ratings]
   end
 
   def new
