@@ -14,15 +14,27 @@ class MoviesController < ApplicationController
     @filter_ratings = params[:ratings] ? params[:ratings] : prev_ratings_nil
     session[:prev_ratings] = @filter_ratings
 
-    if ! @sort.nil?
+    if !@sort.nil?
 	@movies = Movie.find(:all, :conditions => {"rating" => @filter_ratings.keys}, :order => "#{@sort} ASC")
     else
         @movies = Movie.find(:all, :conditions => {"rating" => @filter_ratings.keys})
     end
-    
-    if !params.key?(:sort) || !params.key?(:ratings)
+
+    #Case where none of the sessions are set in the very beginning
+    if session[:prev_sort].nil? || session[:prev_ratings].nil?
+	return
+    end
+    #Cases for whether sort or ratings are in the params
+    if (!params.key?(:sort) && params.key?(:ratings)) || (params.key?(:sort) && !params.key?(:ratings))
 	flash.keep
 	redirect_to movies_path(:sort => @sort, :ratings => @filter_ratings)
+	return
+    end
+    #Case for when all the boxes are unchecked
+    if !params.key?(:sort) && !params.key?(:ratings)
+	flash.keep
+	redirect_to movies_path(:sort => session[:prev_sort], :ratings => session[:prev_ratings])
+	return
     end
   end
 
