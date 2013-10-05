@@ -20,6 +20,11 @@ class MoviesController < ApplicationController
         @movies = Movie.find(:all, :conditions => {"rating" => @filter_ratings.keys})
     end
 
+    #Case for when all the boxes are unchecked
+    if !params.key?(:sort) && !params.key?(:ratings)
+	flash.keep
+	redirect_to movies_path(:sort => session[:prev_sort], :ratings => session[:prev_ratings])
+    end
     #Case where none of the sessions are set in the very beginning
     if session[:prev_sort].nil? || session[:prev_ratings].nil?
 	return
@@ -28,13 +33,6 @@ class MoviesController < ApplicationController
     if (!params.key?(:sort) && params.key?(:ratings)) || (params.key?(:sort) && !params.key?(:ratings))
 	flash.keep
 	redirect_to movies_path(:sort => @sort, :ratings => @filter_ratings)
-	return
-    end
-    #Case for when all the boxes are unchecked
-    if !params.key?(:sort) && !params.key?(:ratings)
-	flash.keep
-	redirect_to movies_path(:sort => session[:prev_sort], :ratings => session[:prev_ratings])
-	return
     end
   end
 
